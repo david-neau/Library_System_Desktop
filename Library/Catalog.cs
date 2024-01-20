@@ -8,23 +8,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace Library
 {
-    public partial class MyBook : Form
+    public partial class Catalog : Form
     {
         private DatabaseHelper dbHelper;
         public int userID;
-        public string name;
+        string name;
 
-        public MyBook(int userID)
+        public Catalog(int userID)
         {
             InitializeComponent();
             this.userID = userID;
-            dbHelper = new DatabaseHelper ("Data Source=xe; User ID=Kaze; Password=123");
+            dbHelper = new DatabaseHelper("Data Source=xe; User ID=Kaze; Password=123");
             getName();
-
         }
 
         public void getName()
@@ -41,12 +39,13 @@ namespace Library
 
                     if (userName != null && userName != DBNull.Value)
                     {
-                        name = userName.ToString();
+                         name = userName.ToString();
 
                     }
                 }
             }
         }
+
         private void Dashboard_Load(object sender, EventArgs e)
         {
             toolStripDropDownButton1.Text = name;
@@ -64,8 +63,8 @@ namespace Library
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Dashboard dashboard = new Dashboard(userID);
-            dashboard.Show();
+            Circulation circulation = new Circulation(userID);
+            circulation.Show();
             this.Hide();
         }
 
@@ -74,6 +73,23 @@ namespace Library
             Login login = new Login();
             login.Show();
             this.Close();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            Dashboard dashboard = new Dashboard(userID);
+            dashboard.Show();
+            this.Hide();
+        }
+
+        private void tabPage3_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

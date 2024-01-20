@@ -12,21 +12,18 @@ using System.Xml.Linq;
 
 namespace Library
 {
-    public partial class MyBook : Form
+    public partial class Circulation : Form
     {
         private DatabaseHelper dbHelper;
         public int userID;
         public string name;
-
-        public MyBook(int userID)
+        public Circulation(int userID)
         {
             InitializeComponent();
             this.userID = userID;
-            dbHelper = new DatabaseHelper ("Data Source=xe; User ID=Kaze; Password=123");
+            dbHelper = new DatabaseHelper("Data Source=xe; User ID=Kaze; Password=123");
             getName();
-
         }
-
         public void getName()
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
@@ -42,7 +39,7 @@ namespace Library
                     if (userName != null && userName != DBNull.Value)
                     {
                         name = userName.ToString();
-
+                        
                     }
                 }
             }
@@ -54,7 +51,9 @@ namespace Library
 
         private void button2_Click(object sender, EventArgs e)
         {
-
+           Catalog catalog = new Catalog(userID);
+            catalog.Show();
+            this.Hide();
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -62,18 +61,28 @@ namespace Library
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Dashboard dashboard = new Dashboard(userID);
-            dashboard.Show();
-            this.Hide();
-        }
-
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             Login login = new Login();
             login.Show();
             this.Close();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            Dashboard dashboard = new Dashboard(userID);
+            dashboard.Show();
+            this.Hide();
         }
     }
 }
