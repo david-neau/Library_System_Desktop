@@ -12,13 +12,13 @@ using System.Xml.Linq;
 
 namespace Library
 {
-    public partial class MyBook : Form
+    public partial class MyAccount : Form
     {
         private DatabaseHelper dbHelper;
         public int userID;
         public string name;
 
-        public MyBook(int userID)
+        public MyAccount(int userID)
         {
             InitializeComponent();
             this.userID = userID;
@@ -54,7 +54,9 @@ namespace Library
 
         private void button2_Click(object sender, EventArgs e)
         {
-
+            MyBook myBook = new MyBook(userID);
+            myBook.Show();
+            this.Hide();
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -74,13 +76,6 @@ namespace Library
             Login login = new Login();
             login.Show();
             this.Close();
-        }
-
-        private void button3_Click_1(object sender, EventArgs e)
-        {
-            MyAccount myAccount = new MyAccount(userID);
-            myAccount.Show();
-            this.Hide();
         }
     }
 }

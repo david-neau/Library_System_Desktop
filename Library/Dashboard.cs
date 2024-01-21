@@ -45,19 +45,60 @@ namespace Library
                 }
             }
         }
+
+        public void getBookLastest()
+        {
+            using (OracleConnection connection = dbHelper.GetOpenConnection())
+            {
+                string query1 = "SELECT * FROM Books ORDER BY id DESC";
+                using (OracleCommand command1 = new OracleCommand(query1, connection))
+                {
+                    using (OracleDataAdapter adapter1 = new OracleDataAdapter(command1))
+                    {
+                        DataTable dataTable = new DataTable();
+                        adapter1.Fill(dataTable);
+                        dataGridView4.DataSource = dataTable;
+                    }
+                }
+            }
+        }
+
+        public void getCategory()
+        {
+            using (OracleConnection connection = dbHelper.GetOpenConnection())
+            {
+                string query2 = "SELECT * FROM Categories";
+                using (OracleCommand command2 = new OracleCommand(query2, connection))
+                {
+                    using (OracleDataAdapter adapter2 = new OracleDataAdapter(command2))
+                    {
+                        DataTable dataTable = new DataTable();
+                        adapter2.Fill(dataTable);
+                        dataGridView3.DataSource = dataTable;
+                    }
+                }
+            }
+        }
+
         private void Dashboard_Load(object sender, EventArgs e)
         {
-              toolStripDropDownButton1.Text = name;
+            toolStripDropDownButton1.Text = name;
+                  getBookLastest();
+            getCategory();
+
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            
+            MyBook myBook = new MyBook(userID);
+            myBook.Show();
+            this.Hide();
+
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-
+            /*  dataGridView1.DataSource = dataSet.Tables["Books"];*/
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
@@ -65,6 +106,23 @@ namespace Library
             Login login = new Login();
             login.Show();
             this.Close();
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            MyAccount myAccount = new MyAccount(userID);
+            myAccount.Show();
+            this.Hide();
+        }
+
+        private void tabControl1_Selected(object sender, TabControlEventArgs e)
+        {
+         
+        }
+
+        private void textBox4_KeyPress(object sender, KeyPressEventArgs e)
+        {
+           
         }
     }
 }

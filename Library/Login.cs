@@ -47,17 +47,16 @@ namespace Library
 
                             if (isAdmin == "Y")
                             {
-                                // Redirect to the admin form with user ID
+                           
                                 Catalog catalog = new Catalog(userId);
                                 catalog.Show();
-                                this.Hide(); // Optionally, hide the login form
+                                this.Hide(); 
                             }
                             else
-                            {
-                                // Redirect to the regular user form with user ID
+                            { 
                                 Dashboard dashboard = new Dashboard(userId);
                                 dashboard.Show();
-                                this.Hide(); // Optionally, hide the login form
+                                this.Hide(); 
                             }
                         }
                         else
