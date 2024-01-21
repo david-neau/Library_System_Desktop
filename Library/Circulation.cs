@@ -239,7 +239,7 @@ namespace Library
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-                string query = @"SELECT  B.TITLE, BC.Barcode, T.ID, T.BORROW_DATE,T.RETURN_DATE
+                string query = @"SELECT  B.TITLE, BC.Barcode, T.ID, T.BORROW_DATE,T.RETURN_DATE  
                         FROM TRANSACTIONS T
                         JOIN BOOK_COPY BC ON T.BOOK_COPY_ID = BC.ID
                         JOIN BOOKS B ON BC.BOOK_ID = B.ID
