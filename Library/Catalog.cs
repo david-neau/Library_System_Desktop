@@ -1,17 +1,12 @@
 ﻿using Oracle.DataAccess.Client;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ZXing;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Library
 {
@@ -57,7 +52,8 @@ namespace Library
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-                string query = "SELECT * FROM Books ";
+                string query = "SELECT  b.title,b.author, b.year,b.isbn, b.id, c.name AS category_name FROM Books b JOIN categories c ON b.category_id = c.id";
+
 
                 using (OracleCommand command = new OracleCommand(query, connection))
                 {
@@ -167,7 +163,7 @@ namespace Library
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-          
+
 
             if (tabControl1.SelectedTab == tabPage3)
             {
@@ -179,17 +175,17 @@ namespace Library
             }
             else if (tabControl1.SelectedTab == tabPage6)
             {
-              
+
                 getCopyList();
             }
-            else if(tabControl1.SelectedTab == tabPage5)
+            else if (tabControl1.SelectedTab == tabPage5)
             {
                 getBarcodeList();
             }
             else if (tabControl1.SelectedTab == tabPage4)
             {
                 loadCategoryInCombo();
-                comboBox2.SelectedIndex = 0;
+                comboBox2.SelectedIndex = -1;
             }
 
         }
@@ -238,7 +234,7 @@ namespace Library
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-                string query = "SELECT * FROM BOOK_COPY WHERE is_labeled = 'N' AND is_lost = 'N'";
+                string query = "SELECT b.title,bc.* FROM BOOK_COPY bc JOIN Books b ON bc.book_id = b.id WHERE bc.is_labeled = 'N' AND bc.is_lost = 'N' ";
 
                 using (OracleCommand command = new OracleCommand(query, connection))
                 {
@@ -257,7 +253,7 @@ namespace Library
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-                string query = "SELECT isbn, title, author, category_id, year FROM books WHERE id = :bookID";
+                string query = "SELECT isbn, title,Image, author, category_id, year FROM books WHERE id = :bookID";
 
                 using (OracleCommand command = new OracleCommand(query, connection))
                 {
@@ -272,6 +268,22 @@ namespace Library
                             textBox10.Text = reader["author"].ToString();
                             comboBox3.SelectedValue = Convert.ToInt32(reader["category_id"]);
                             textBox1.Text = reader["year"].ToString();
+
+                            // Retrieve the image data from the database
+                            byte[] imageData = reader["Image"] as byte[];
+
+                            if (imageData != null)
+                            {
+                                // Convert the image data to an Image object
+                                using (MemoryStream ms = new MemoryStream(imageData))
+                                {
+                                    pictureBox3.Image = Image.FromStream(ms);
+                                }
+                            }
+                            else
+                            {
+                                pictureBox3.Image = null;
+                            }
                         }
                     }
                 }
@@ -286,11 +298,12 @@ namespace Library
                 tabControl1.SelectedTab = tabPage6;
                 loadCategoryInDetail();
                 getBookDetail();
-               
+
 
             }
-            catch { 
-            MessageBox.Show("Please select a book");
+            catch
+            {
+
             }
 
         }
@@ -312,7 +325,35 @@ namespace Library
                 }
             }
         }
-      
+
+        private string selectedImagePath; // Declare a variable to store the selected image path
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            // Open file dialog to select image
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files (*.jpg, *.jpeg, *.png, *.gif, *.bmp)|*.jpg; *.jpeg; *.png; *.gif; *.bmp";
+            openFileDialog.Title = "Select Image";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Store the selected image path
+                selectedImagePath = openFileDialog.FileName;
+
+                // Display the selected image in pictureBox3
+                pictureBox3.Image = Image.FromFile(selectedImagePath);
+            }
+        }
+
+        private byte[] ImageToByteArray2(Image image)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.Save(ms, image.RawFormat);
+                return ms.ToArray();
+            }
+        }
+
 
         private void button11_Click(object sender, EventArgs e)
         {
@@ -324,11 +365,12 @@ namespace Library
             string textBox1Value = textBox1.Text;
 
             try
-            { // Update the book details in the database
+            {
+                // Update the book details in the database
                 getCategory();
                 using (OracleConnection connection = dbHelper.GetOpenConnection())
                 {
-                    string query = "UPDATE books SET isbn = :isbn, title = :title, author = :author, category_id = :categoryId, year = :year WHERE id = :bookID";
+                    string query = "UPDATE books SET isbn = :isbn, title = :title, author = :author, category_id = :categoryId, year = :year, Image = :image WHERE id = :bookID";
 
                     using (OracleCommand command = new OracleCommand(query, connection))
                     {
@@ -337,19 +379,23 @@ namespace Library
                         command.Parameters.Add(":author", OracleDbType.Varchar2).Value = textBox10Value;
                         command.Parameters.Add(":categoryId", OracleDbType.Int32).Value = comboBox3Value;
                         command.Parameters.Add(":year", OracleDbType.Varchar2).Value = textBox1Value;
+                        command.Parameters.Add(":image", OracleDbType.Blob).Value = ImageToByteArray2(Image.FromFile(selectedImagePath));
                         command.Parameters.Add(":bookID", OracleDbType.Int32).Value = selectedBookID;
 
                         command.ExecuteNonQuery();
                     }
                 }
-               
-                getBookDetail(); MessageBox.Show("Updated!");
+
+                getBookDetail();
+                MessageBox.Show("Updated!");
             }
-            catch {
-            MessageBox.Show("Cannot update!");
+            catch
+            {
+                MessageBox.Show("Cannot update!");
             }
-           
         }
+
+
 
         private void button7_Click(object sender, EventArgs e)
         {
@@ -399,20 +445,23 @@ namespace Library
 
         private void dataGridView3_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            try {
+            try
+            {
                 selectedCategoryID = Convert.ToInt32(dataGridView3.Rows[e.RowIndex].Cells["id"].Value.ToString());
                 textBox2.Text = Convert.ToString(dataGridView3.Rows[e.RowIndex].Cells["name"].Value.ToString());
             }
-            catch {
-                MessageBox.Show("Invalid selection!");
+            catch
+            {
+
             }
-            
+
 
         }
 
         private void button8_Click(object sender, EventArgs e)
         {
-            try {
+            try
+            {
                 using (OracleConnection connection = dbHelper.GetOpenConnection())
                 {
                     string query = "INSERT INTO book_copy (book_id,is_lost) VALUES (:bookID, 'N')";
@@ -427,17 +476,18 @@ namespace Library
                 MessageBox.Show("Copy added!"); getCopyList();
 
             }
-            catch { 
-            MessageBox.Show("Cannot add!");
+            catch
+            {
+                MessageBox.Show("Cannot add!");
             }
-            
+
         }
 
         private void getCopyList()
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-                string query = "SELECT bc.*, u.name AS LastBorrowed FROM BOOK_COPY bc LEFT JOIN transactions t ON bc.id = t.book_copy_id LEFT JOIN Users u ON t.user_id = u.id WHERE bc.book_id = :bookID";
+                string query = "SELECT ID,BARCODE,IS_LABELED,IS_LOST,IS_AVAILABLE FROM BOOK_COPY WHERE book_id = :bookID";
 
 
                 using (OracleCommand command = new OracleCommand(query, connection))
@@ -459,7 +509,7 @@ namespace Library
         {
 
             if (selectedCopyID != 0)
-            { 
+            {
                 string query = "SELECT is_lost FROM book_copy WHERE id = :copyID";
 
                 try
@@ -476,8 +526,8 @@ namespace Library
                             {
                                 string currentStatus = isLost.ToString();
 
-                              
-                                string updateQuery = "UPDATE book_copy SET is_lost = :newStatus WHERE id = :copyID";
+
+                                string updateQuery = "UPDATE book_copy SET is_lost = :newStatus, is_available = 'N' WHERE id = :copyID";
 
                                 using (OracleCommand updateCommand = new OracleCommand(updateQuery, connection))
                                 {
@@ -505,8 +555,8 @@ namespace Library
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             try { selectedCopyID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["id"].Value.ToString()); }
-            catch { MessageBox.Show("Invalid selection!"); }
-            
+            catch { }
+
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -570,6 +620,7 @@ namespace Library
                             SaveBarcodeImageToDatabase(barcode, barcodeImage);
                         }
                         MessageBox.Show("Barcode generated");
+                        getBarcodeList();
                     }
                 }
             }
@@ -586,7 +637,7 @@ namespace Library
 
                     using (OracleConnection connection = dbHelper.GetOpenConnection())
                     {
-                        string query = "UPDATE book_copy SET Barcode_IMG = :barcodeImage, IS_LABELED = 'Y' WHERE barcode = :barcode";
+                        string query = "UPDATE book_copy SET Barcode_IMG = :barcodeImage,IS_AVAILABLE = 'Y', IS_LABELED = 'Y' WHERE barcode = :barcode";
 
                         using (OracleCommand command = new OracleCommand(query, connection))
                         {
@@ -597,14 +648,84 @@ namespace Library
                         }
                     }
                 }
-               
+
             }
             catch
             {
                 MessageBox.Show("Cannot save!");
             }
-           
+        }
+        private void button9_Click(object sender, EventArgs e)
+        {
+            // Open file dialog to select image for book cover
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files (*.jpg, *.jpeg, *.png, *.gif, *.bmp)|*.jpg; *.jpeg; *.png; *.gif; *.bmp";
+            openFileDialog.Title = "Select Book Cover Image";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Store the selected file temporarily
+                string selectedImagePath = openFileDialog.FileName;
+                pictureBox2.Image = Image.FromFile(selectedImagePath);
+            }
+        }
+        private void button10_Click(object sender, EventArgs e)
+        {
+            // Get the values from the text boxes and combo box
+            string isbn = textBox5.Text;
+            string title = textBox3.Text;
+            string author = textBox4.Text;
+            int categoryId = Convert.ToInt32(comboBox2.SelectedValue);
+            string year = textBox8.Text;
+
+            // Get the image from the picture box
+            Image bookCoverImage = pictureBox2.Image;
+
+            // Insert into Books table
+            using (OracleConnection connection = dbHelper.GetOpenConnection())
+            {
+                string query = "INSERT INTO Books (isbn, title, author, category_id, year, Image) VALUES (:isbn, :title, :author, :categoryId, :year, :image)";
+
+                using (OracleCommand command = new OracleCommand(query, connection))
+                {
+                    command.Parameters.Add(":isbn", OracleDbType.Varchar2).Value = isbn;
+                    command.Parameters.Add(":title", OracleDbType.Varchar2).Value = title;
+                    command.Parameters.Add(":author", OracleDbType.Varchar2).Value = author;
+                    command.Parameters.Add(":categoryId", OracleDbType.Int32).Value = categoryId;
+                    command.Parameters.Add(":year", OracleDbType.Varchar2).Value = year;
+
+                    if (bookCoverImage != null)
+                    {
+                        command.Parameters.Add(":image", OracleDbType.Blob).Value = ImageToByteArray(bookCoverImage);
+                    }
+                    else
+                    {
+                        command.Parameters.Add(":image", OracleDbType.Blob).Value = DBNull.Value;
+                    }
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            // Clear the text boxes and picture box
+            textBox5.Text = "";
+            textBox3.Text = "";
+            textBox4.Text = "";
+            comboBox2.SelectedIndex = 0;
+            textBox8.Text = "";
+            pictureBox2.Image = null;
+
+            MessageBox.Show("Book added successfully!");
+            tabControl1.SelectedTab = tabPage3;
         }
 
+        private byte[] ImageToByteArray(Image image)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.Save(ms, image.RawFormat);
+                return ms.ToArray();
+            }
+        }
     }
 }

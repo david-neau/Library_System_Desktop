@@ -288,7 +288,7 @@
             this.Controls.Add(this.toolStrip1);
             this.Name = "MyBook";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Dashboard";
+            this.Text = "My Book";
             this.Load += new System.EventHandler(this.Dashboard_Load);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();

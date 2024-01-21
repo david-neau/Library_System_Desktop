@@ -1,14 +1,9 @@
 ﻿using Oracle.DataAccess.Client;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace Library
 {
@@ -20,6 +15,7 @@ namespace Library
         public int selectedID;
         public string barcode;
         public string checkInBarcode;
+        public string barcodeCopy;
         public Circulation(int userID)
         {
             InitializeComponent();
@@ -35,7 +31,7 @@ namespace Library
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
                 // Check if the barcode exists in BOOK_COPY table
-                string query = "SELECT COUNT(*) FROM BOOK_COPY WHERE BARCODE = :barcode";
+                string query = "SELECT COUNT(*) FROM BOOK_COPY WHERE BARCODE = :barcode AND IS_AVAILABLE = 'Y'";
                 using (OracleCommand command = new OracleCommand(query, connection))
                 {
                     command.Parameters.Add(":barcode", OracleDbType.Varchar2).Value = barcode;
@@ -59,12 +55,21 @@ namespace Library
                                 insertCommand.ExecuteNonQuery();
                             }
                             getTransactions();
+
+                            // Update the status of the book in BOOK_COPY table
+                            string updateStatusQuery = "UPDATE BOOK_COPY SET is_available = 'N' WHERE BARCODE = :barcode";
+                            using (OracleCommand updateStatusCommand = new OracleCommand(updateStatusQuery, connection))
+                            {
+                                updateStatusCommand.Parameters.Add(":barcode", OracleDbType.Varchar2).Value = barcode;
+                                updateStatusCommand.ExecuteNonQuery();
+                            }
+
                         }
 
                     }
                     else
                     {
-                        MessageBox.Show("Invalid barcode");
+                        MessageBox.Show("Item not available");
                     }
                 }
             }
@@ -72,42 +77,38 @@ namespace Library
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            
-            
+
+
             if (selectedID != 0)
             {
-                try
-                {
-                    barcode = textBox2.Text;
-                    borrowBook(barcode, selectedID);
-                }
-                catch
-                {
-                    MessageBox.Show("Invalid copy ID");
-                }
-              
-                
+
+                barcode = textBox2.Text;
+                borrowBook(barcode, selectedID);
+
+
+
             }
-            else { 
-            using (OracleConnection connection = dbHelper.GetOpenConnection())
+            else
             {
-                string query1 = "SELECT * FROM Users WHERE name LIKE '%' || :name || '%'";
-
-                using (OracleCommand command = new OracleCommand(query1, connection))
+                using (OracleConnection connection = dbHelper.GetOpenConnection())
                 {
-                    command.Parameters.Add(":name", OracleDbType.Varchar2).Value = textBox2.Text;
+                    string query1 = "SELECT * FROM Users WHERE name LIKE '%' || :name || '%'";
 
-                    using (OracleDataAdapter adapter = new OracleDataAdapter(command))
+                    using (OracleCommand command = new OracleCommand(query1, connection))
                     {
-                        DataTable dataTable1 = new DataTable();
-                        adapter.Fill(dataTable1);
-                        dataGridView6.DataSource = dataTable1;
+                        command.Parameters.Add(":name", OracleDbType.Varchar2).Value = textBox2.Text;
+
+                        using (OracleDataAdapter adapter = new OracleDataAdapter(command))
+                        {
+                            DataTable dataTable1 = new DataTable();
+                            adapter.Fill(dataTable1);
+                            dataGridView6.DataSource = dataTable1;
+                        }
                     }
                 }
+
+
             }
-
-
-        }
         }
 
         public void getName()
@@ -220,11 +221,22 @@ namespace Library
 
                             // Update the return date in TRANSACTIONS table
                             string updateQuery = "UPDATE TRANSACTIONS SET RETURN_DATE = SYSDATE WHERE BOOK_COPY_ID IN (SELECT ID FROM BOOK_COPY WHERE BARCODE = :barcode) AND RETURN_DATE IS NULL";
+
+
                             using (OracleCommand updateCommand = new OracleCommand(updateQuery, connection))
                             {
                                 updateCommand.Parameters.Add(":barcode", OracleDbType.Varchar2).Value = barcode;
                                 updateCommand.ExecuteNonQuery();
                             }
+
+                            // Update the status of the book in BOOK_COPY table
+                            string updateStatusQuery = "UPDATE BOOK_COPY SET is_available = 'Y' WHERE BARCODE = :barcode";
+                            using (OracleCommand updateStatusCommand = new OracleCommand(updateStatusQuery, connection))
+                            {
+                                updateStatusCommand.Parameters.Add(":barcode", OracleDbType.Varchar2).Value = barcode;
+                                updateStatusCommand.ExecuteNonQuery();
+                            }
+
                         }
                     }
                     else
@@ -263,13 +275,13 @@ namespace Library
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-                string query = @"SELECT T.*, B.TITLE 
-                        FROM TRANSACTIONS T
-                        JOIN BOOK_COPY BC ON T.BOOK_COPY_ID = BC.ID
-                        JOIN BOOKS B ON BC.BOOK_ID = B.ID
-                        WHERE T.RETURN_DATE IS NOT NULL
-                        ORDER BY T.RETURN_DATE DESC
-                        ";
+                string query = @"SELECT BC.BARCODE, B.TITLE, U.NAME, T.*
+                FROM TRANSACTIONS T
+                JOIN BOOK_COPY BC ON T.BOOK_COPY_ID = BC.ID
+                JOIN BOOKS B ON BC.BOOK_ID = B.ID
+                JOIN USERS U ON T.USER_ID = U.ID
+                WHERE T.RETURN_DATE IS NOT NULL
+                ORDER BY T.RETURN_DATE DESC";
 
                 using (OracleCommand command = new OracleCommand(query, connection))
                 {
@@ -290,7 +302,9 @@ namespace Library
             if (selectedRowIndex >= 0)
             {
                 DataGridViewRow selectedRow = dataGridView6.Rows[selectedRowIndex];
-                try { selectedID = Convert.ToInt32(selectedRow.Cells["id"].Value);
+                try
+                {
+                    selectedID = Convert.ToInt32(selectedRow.Cells["id"].Value);
                     // Get the name from the selectedID
                     string name = GetNameFromID(selectedID);
 
@@ -302,17 +316,18 @@ namespace Library
                     getTransactions();
 
                 }
-                catch {
+                catch
+                {
                     selectedID = 0;
                     barcode = string.Empty;
-                  
+
                     label29.Text = "";
                     button3.Text = "Patron";
                 }
 
-                
 
-               
+
+
             }
         }
 
@@ -344,7 +359,7 @@ namespace Library
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
-                borrowBook(barcode, selectedID) ;
+                borrowBook(barcode, selectedID);
             }
         }
 
@@ -359,6 +374,79 @@ namespace Library
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             getRecentCheckin();
+        }
+
+        private void getCopyStatus()
+        {
+
+            // Assuming you want to retrieve the book details based on the provided barcode
+
+            string query = @"SELECT BC.BARCODE, BB.ISBN, BB.TITLE, BB.IMAGE, BC.IS_AVAILABLE
+                 FROM BOOK_COPY BC
+                 JOIN BOOKS BB ON BC.BOOK_ID = BB.ID
+                 WHERE BC.BARCODE = :barcode";
+
+
+            using (OracleConnection connection = dbHelper.GetOpenConnection())
+            {
+                using (OracleCommand command = new OracleCommand(query, connection))
+                {
+                    command.Parameters.Add(":barcode", OracleDbType.Varchar2).Value = barcodeCopy;
+
+                    using (OracleDataAdapter adapter = new OracleDataAdapter(command))
+                    {
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+
+                        if (dataTable.Rows.Count > 0)
+                        {
+                            // Retrieve the BLOB image from the DataTable
+                            byte[] imageBytes = dataTable.Rows[0]["IMAGE"] as byte[];
+
+                            if (imageBytes != null)
+                            {
+                                // Convert the byte array to an Image
+                                Image image;
+                                using (MemoryStream ms = new MemoryStream(imageBytes))
+                                {
+                                    image = Image.FromStream(ms);
+                                }
+
+                                // Assign the image to the PictureBox
+                                pictureBox3.Image = image;
+                            }
+                            else
+                            {
+                                // Clear the PictureBox if the image is null
+                                pictureBox3.Image = null;
+                            }
+
+                            textBox4.Text = dataTable.Rows[0]["BARCODE"].ToString();
+                            textBox10.Text = dataTable.Rows[0]["ISBN"].ToString();
+                            textBox12.Text = dataTable.Rows[0]["TITLE"].ToString();
+                            textBox1.Text = dataTable.Rows[0]["IS_AVAILABLE"].ToString() == "Y" ? "Available" : "Not Available";
+                        }
+                        else
+                        {
+                            // Handle case when no book is found with the provided barcode
+                            pictureBox3.Image = null;
+                            textBox4.Text = "";
+                            textBox10.Text = "";
+                            textBox12.Text = "";
+                            textBox1.Text = "Not Available";
+                        }
+                        dataGridView1.DataSource = dataTable;
+                    }
+                }
+            }
+            }
+
+    
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            barcodeCopy = toolStripTextBox1.Text;
+            getCopyStatus();
+            tabControl1.SelectedTab = tabPage3;
         }
     }
 }

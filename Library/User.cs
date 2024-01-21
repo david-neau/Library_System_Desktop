@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Library
         public int userID;
         string name;
         public int selectedUserID;
+        public bool newImageCheck;
 
         public User(int userID)
         {
@@ -41,7 +43,7 @@ namespace Library
 
                     if (userName != null && userName != DBNull.Value)
                     {
-                         name = userName.ToString();
+                        name = userName.ToString();
 
                     }
                 }
@@ -63,7 +65,7 @@ namespace Library
 
         private void button3_Click(object sender, EventArgs e)
         {
-        
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -99,7 +101,7 @@ namespace Library
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-          
+
         }
 
         private void getUserList()
@@ -110,7 +112,7 @@ namespace Library
 
                 using (OracleCommand command = new OracleCommand(query2, connection))
                 {
-               
+
                     using (OracleDataAdapter adapter = new OracleDataAdapter(command))
                     {
                         DataTable dataTable2 = new DataTable();
@@ -125,28 +127,58 @@ namespace Library
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-                string query = "SELECT id, is_admin, name, email, password, created_at, updated_at FROM Users WHERE id = :id";
+              
+
+                string query = "SELECT id, is_admin, name, email, password, created_at, updated_at, image FROM Users WHERE id = :id";
 
                 using (OracleCommand command = new OracleCommand(query, connection))
                 {
                     command.Parameters.Add(":id", OracleDbType.Int32).Value = selectedUserID;
 
-                    using (OracleDataReader reader = command.ExecuteReader())
+                    using (OracleDataAdapter adapter = new OracleDataAdapter(command))
                     {
-                        if (reader.Read())
+                        DataTable dataTable = new DataTable();
+                        adapter.Fill(dataTable);
+
+                        if (dataTable.Rows.Count > 0)
                         {
-                            textBox6.Text = reader["id"].ToString();
-                            checkBox2.Checked = (string)reader["is_admin"] == "Y";
-                            textBox7.Text = reader["name"].ToString();
-                            textBox5.Text = reader["email"].ToString();
-                            textBox4.Text = reader["password"].ToString();
-                            label13.Text = reader["created_at"].ToString();
-                            label17.Text = reader["updated_at"].ToString();
+                            DataRow row = dataTable.Rows[0];
+                            textBox6.Text = row["id"].ToString();
+                            checkBox2.Checked = row["is_admin"].ToString() == "Y";
+                            textBox7.Text = row["name"].ToString();
+                            textBox5.Text = row["email"].ToString();
+                            textBox4.Text = row["password"].ToString();
+                            label13.Text = row["created_at"].ToString();
+                            label17.Text = row["updated_at"].ToString();
+                            object imageObject = row["image"];
+
+                            if (imageObject != DBNull.Value)
+                            {
+                                byte[] imageBytes = (byte[])imageObject;
+
+                                // Convert the byte array to an Image
+                                Image image;
+                                using (MemoryStream ms = new MemoryStream(imageBytes))
+                                {
+                                    image = Image.FromStream(ms);
+                                }
+
+                                // Assign the image to the PictureBox
+                                pictureBox3.Image = image;
+                            }
+                            else
+                            {
+                                // Clear the PictureBox if the image is null
+                                pictureBox3.Image = null;
+                            }
                         }
                     }
                 }
             }
         }
+            
+
+        
 
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -172,11 +204,113 @@ namespace Library
             getUserInfo();
         }
 
-        
+
 
         private void button7_Click(object sender, EventArgs e)
         {
-            string query = "UPDATE Users SET name = :name, email = :email, password = :password, is_admin = :is_admin WHERE id = :id";
+            
+            if(newImageCheck == true)
+            {
+                string query = "UPDATE Users SET image = :image, name = :name, email = :email, password = :password, is_admin = :is_admin WHERE id = :id";
+
+                try
+                {
+                    using (OracleConnection connection = dbHelper.GetOpenConnection())
+                    {
+                        using (OracleCommand command = new OracleCommand(query, connection))
+                        {
+                            command.Parameters.Add(":image", OracleDbType.Blob).Value = ImageToByteArray2(pictureBox3.Image);
+                            command.Parameters.Add(":name", OracleDbType.Varchar2).Value = textBox7.Text;
+                            command.Parameters.Add(":email", OracleDbType.Varchar2).Value = textBox5.Text;
+                            command.Parameters.Add(":password", OracleDbType.Varchar2).Value = textBox4.Text;
+                            command.Parameters.Add(":is_admin", OracleDbType.Char).Value = checkBox2.Checked ? "Y" : "N";
+                            command.Parameters.Add(":id", OracleDbType.Int32).Value = selectedUserID;
+
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    MessageBox.Show("User Updated!");
+                    newImageCheck = false;
+
+                }
+                catch
+                {
+                    MessageBox.Show("Failed to update User!");
+                }
+            }
+            else
+            {
+                string query = "UPDATE Users SET name = :name, email = :email, password = :password, is_admin = :is_admin WHERE id = :id";
+
+                try
+                {
+                    using (OracleConnection connection = dbHelper.GetOpenConnection())
+                    {
+                        using (OracleCommand command = new OracleCommand(query, connection))
+                        {
+                            command.Parameters.Add(":name", OracleDbType.Varchar2).Value = textBox7.Text;
+                            command.Parameters.Add(":email", OracleDbType.Varchar2).Value = textBox5.Text;
+                            command.Parameters.Add(":password", OracleDbType.Varchar2).Value = textBox4.Text;
+                            command.Parameters.Add(":is_admin", OracleDbType.Char).Value = checkBox2.Checked ? "Y" : "N";
+                            command.Parameters.Add(":id", OracleDbType.Int32).Value = selectedUserID;
+
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    MessageBox.Show("User Updated!");
+
+                }
+                catch
+                {
+                    MessageBox.Show("Failed to update User!");
+                }
+            }
+
+
+    
+            
+            
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openFileDialog2.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                pictureBox3.Image = Image.FromFile(openFileDialog2.FileName);
+                newImageCheck = true;
+            }
+        }
+        private byte[] ImageToByteArray2(Image image)
+        {
+            if (image != null)
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    image.Save(ms, image.RawFormat);
+                    return ms.ToArray();
+                }
+            }
+            else
+            {
+                return null; // or throw an exception, depending on your requirements
+            }
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openFileDialog1.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                pictureBox2.Image = Image.FromFile(openFileDialog1.FileName);
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            string query = "INSERT INTO Users (name, email, password, is_admin, image) VALUES (:name, :email, :password, :is_admin, :image)";
 
             try
             {
@@ -184,23 +318,33 @@ namespace Library
                 {
                     using (OracleCommand command = new OracleCommand(query, connection))
                     {
-                        command.Parameters.Add(":name", OracleDbType.Varchar2).Value = textBox7.Text;
-                        command.Parameters.Add(":email", OracleDbType.Varchar2).Value = textBox5.Text;
-                        command.Parameters.Add(":password", OracleDbType.Varchar2).Value = textBox4.Text;
-                        command.Parameters.Add(":is_admin", OracleDbType.Char).Value = checkBox2.Checked ? "Y" : "N";
-                        command.Parameters.Add(":id", OracleDbType.Int32).Value = selectedUserID;
-
+                        command.Parameters.Add(":name", OracleDbType.Varchar2).Value = textBox8.Text;
+                        command.Parameters.Add(":email", OracleDbType.Varchar2).Value = textBox2.Text;
+                        command.Parameters.Add(":password", OracleDbType.Varchar2).Value = textBox1.Text;
+                        command.Parameters.Add(":is_admin", OracleDbType.Char).Value = checkBox1.Checked ? "Y" : "N";
+                        if (pictureBox3.Image != null)
+                        {
+                            command.Parameters.Add(":image", OracleDbType.Blob).Value = ImageToByteArray2(pictureBox3.Image);
+                        }
+                        else
+                        {
+                            // Handle the case where the image is null
+                            command.Parameters.Add(":image", OracleDbType.Blob).Value = DBNull.Value;
+                        }
                         command.ExecuteNonQuery();
                     }
                 }
-                MessageBox.Show("User Detail Updated!");
+                MessageBox.Show("User Added!");
 
             }
             catch
             {
-                MessageBox.Show("Fail to update User Detail!");
+                MessageBox.Show("Failed to add User!");
             }
-           
         }
+
+      
+
+       
     }
 }
