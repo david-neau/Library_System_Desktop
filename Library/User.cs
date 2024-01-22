@@ -1,15 +1,9 @@
 ﻿using Oracle.DataAccess.Client;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Library
 {
@@ -127,7 +121,7 @@ namespace Library
         {
             using (OracleConnection connection = dbHelper.GetOpenConnection())
             {
-              
+
 
                 string query = "SELECT id, is_admin, name, email, password, created_at, updated_at, image FROM Users WHERE id = :id";
 
@@ -176,9 +170,9 @@ namespace Library
                 }
             }
         }
-            
 
-        
+
+
 
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -199,17 +193,22 @@ namespace Library
 
         private void dataGridView2_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            selectedUserID = Convert.ToInt32(dataGridView2.Rows[e.RowIndex].Cells["id"].Value.ToString());
-            tabControl1.SelectedTab = tabPage1;
-            getUserInfo();
+            try
+            {
+                selectedUserID = Convert.ToInt32(dataGridView2.Rows[e.RowIndex].Cells["id"].Value.ToString());
+                tabControl1.SelectedTab = tabPage1;
+                getUserInfo();
+            }
+            catch { }
+           
         }
 
 
 
         private void button7_Click(object sender, EventArgs e)
         {
-            
-            if(newImageCheck == true)
+
+            if (newImageCheck == true)
             {
                 string query = "UPDATE Users SET image = :image, name = :name, email = :email, password = :password, is_admin = :is_admin WHERE id = :id";
 
@@ -267,9 +266,9 @@ namespace Library
             }
 
 
-    
-            
-            
+
+
+
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -278,8 +277,13 @@ namespace Library
 
             if (result == DialogResult.OK)
             {
-                pictureBox3.Image = Image.FromFile(openFileDialog2.FileName);
-                newImageCheck = true;
+                try
+                {
+                    pictureBox3.Image = Image.FromFile(openFileDialog2.FileName);
+                    newImageCheck = true;
+                }
+                catch { }
+               
             }
         }
         private byte[] ImageToByteArray2(Image image)
@@ -343,8 +347,8 @@ namespace Library
             }
         }
 
-      
 
-       
+
+
     }
 }

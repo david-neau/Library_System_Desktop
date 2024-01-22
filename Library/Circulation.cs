@@ -84,6 +84,7 @@ namespace Library
 
                 barcode = textBox2.Text;
                 borrowBook(barcode, selectedID);
+                getTransactions();
 
 
 
@@ -92,7 +93,7 @@ namespace Library
             {
                 using (OracleConnection connection = dbHelper.GetOpenConnection())
                 {
-                    string query1 = "SELECT * FROM Users WHERE name LIKE '%' || :name || '%'";
+                    string query1 = "SELECT name,email,id FROM Users WHERE name LIKE '%' || :name || '%'";
 
                     using (OracleCommand command = new OracleCommand(query1, connection))
                     {
@@ -368,6 +369,7 @@ namespace Library
             checkInBarcode = textBox3.Text;
             checkIn(checkInBarcode);
             getRecentCheckin();
+            textBox3.Focus();
 
         }
 
@@ -439,14 +441,19 @@ namespace Library
                     }
                 }
             }
-            }
+        }
 
-    
+
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             barcodeCopy = toolStripTextBox1.Text;
             getCopyStatus();
             tabControl1.SelectedTab = tabPage3;
+        }
+
+        private void textBox2_KeyDown(object sender, KeyEventArgs e)
+        {
+
         }
     }
 }

@@ -1,12 +1,5 @@
 ﻿using Oracle.DataAccess.Client;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Library
@@ -47,16 +40,16 @@ namespace Library
 
                             if (isAdmin == "Y")
                             {
-                           
+
                                 Catalog catalog = new Catalog(userId);
                                 catalog.Show();
-                                this.Hide(); 
+                                this.Hide();
                             }
                             else
-                            { 
+                            {
                                 Dashboard dashboard = new Dashboard(userId);
                                 dashboard.Show();
-                                this.Hide(); 
+                                this.Hide();
                             }
                         }
                         else
@@ -89,16 +82,16 @@ namespace Library
 
         private void tbPassword_KeyPress(object sender, KeyPressEventArgs e)
         {
-           if (e.KeyChar == (char)Keys.Enter)
+            if (e.KeyChar == (char)Keys.Enter)
             {
                 LoginAttempt();
             }
-            
+
         }
 
         private void tbPassword_Enter(object sender, EventArgs e)
         {
-             lbMessage.Text = "Please login to continue";
+            lbMessage.Text = "Please login to continue";
         }
 
         private void Login_Load(object sender, EventArgs e)

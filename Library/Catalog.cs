@@ -18,6 +18,7 @@ namespace Library
         public int selectedBookID;
         public int selectedCategoryID;
         public int selectedCopyID;
+      
 
         public Catalog(int userID)
         {
@@ -66,6 +67,9 @@ namespace Library
                 }
             }
         }
+
+       
+
         private string generateBarcode()
         {
             string barcode = "";
@@ -726,6 +730,43 @@ namespace Library
                 image.Save(ms, image.RawFormat);
                 return ms.ToArray();
             }
+        }
+
+        private void searchInLibrary()
+        {
+            using (OracleConnection connection = dbHelper.GetOpenConnection())
+            {
+                string query = "SELECT b.title, b.author, b.year, b.isbn, b.id, c.name AS category_name FROM Books b JOIN categories c ON b.category_id = c.id WHERE title LIKE '%' || :title || '%'";
+
+                using (OracleCommand command = new OracleCommand(query, connection))
+                {
+                    command.Parameters.Add(":title", OracleDbType.Varchar2).Value = textBox12.Text;
+                    using (OracleDataAdapter adapter = new OracleDataAdapter(command))
+                    {
+                        DataTable dataTable5 = new DataTable();
+                        adapter.Fill(dataTable5);
+                        dataGridView4.DataSource = dataTable5;
+                    }
+                }
+            }
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            searchInLibrary();
+        }
+
+        private void textBox12_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                searchInLibrary();
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            tabControl1.SelectedTab = tabPage3;
         }
     }
 }

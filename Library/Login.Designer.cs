@@ -38,25 +38,31 @@
             this.lba = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // btLogin
             // 
-            this.btLogin.Location = new System.Drawing.Point(488, 328);
+            this.btLogin.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.btLogin.BackColor = System.Drawing.SystemColors.Highlight;
+            this.btLogin.FlatAppearance.BorderSize = 0;
+            this.btLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btLogin.ForeColor = System.Drawing.SystemColors.Control;
+            this.btLogin.Location = new System.Drawing.Point(391, 360);
             this.btLogin.Name = "btLogin";
-            this.btLogin.Size = new System.Drawing.Size(75, 23);
+            this.btLogin.Size = new System.Drawing.Size(179, 23);
             this.btLogin.TabIndex = 9;
             this.btLogin.Text = "Login";
-            this.btLogin.UseVisualStyleBackColor = true;
+            this.btLogin.UseVisualStyleBackColor = false;
             this.btLogin.Click += new System.EventHandler(this.btLogin_Click);
             // 
             // lbPassword
             // 
+            this.lbPassword.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.lbPassword.AutoSize = true;
-            this.lbPassword.Location = new System.Drawing.Point(384, 272);
+            this.lbPassword.Location = new System.Drawing.Point(391, 304);
             this.lbPassword.Name = "lbPassword";
             this.lbPassword.Size = new System.Drawing.Size(53, 13);
             this.lbPassword.TabIndex = 8;
@@ -64,7 +70,8 @@
             // 
             // tbPassword
             // 
-            this.tbPassword.Location = new System.Drawing.Point(384, 288);
+            this.tbPassword.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.tbPassword.Location = new System.Drawing.Point(391, 320);
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.PasswordChar = '●';
             this.tbPassword.Size = new System.Drawing.Size(176, 20);
@@ -74,8 +81,9 @@
             // 
             // lbEmail
             // 
+            this.lbEmail.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.lbEmail.AutoSize = true;
-            this.lbEmail.Location = new System.Drawing.Point(384, 216);
+            this.lbEmail.Location = new System.Drawing.Point(391, 248);
             this.lbEmail.Name = "lbEmail";
             this.lbEmail.Size = new System.Drawing.Size(32, 13);
             this.lbEmail.TabIndex = 6;
@@ -83,15 +91,17 @@
             // 
             // tbEmail
             // 
-            this.tbEmail.Location = new System.Drawing.Point(384, 232);
+            this.tbEmail.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.tbEmail.Location = new System.Drawing.Point(391, 264);
             this.tbEmail.Name = "tbEmail";
             this.tbEmail.Size = new System.Drawing.Size(176, 20);
             this.tbEmail.TabIndex = 5;
             // 
             // lbMessage
             // 
+            this.lbMessage.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.lbMessage.AutoSize = true;
-            this.lbMessage.Location = new System.Drawing.Point(384, 192);
+            this.lbMessage.Location = new System.Drawing.Point(391, 224);
             this.lbMessage.Name = "lbMessage";
             this.lbMessage.Size = new System.Drawing.Size(120, 13);
             this.lbMessage.TabIndex = 10;
@@ -99,8 +109,9 @@
             // 
             // lba
             // 
+            this.lba.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.lba.AutoSize = true;
-            this.lba.Location = new System.Drawing.Point(432, 368);
+            this.lba.Location = new System.Drawing.Point(439, 392);
             this.lba.Name = "lba";
             this.lba.Size = new System.Drawing.Size(79, 13);
             this.lba.TabIndex = 11;
@@ -109,8 +120,9 @@
             // 
             // label1
             // 
+            this.label1.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(856, 8);
+            this.label1.Location = new System.Drawing.Point(464, 504);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(36, 13);
             this.label1.TabIndex = 13;
@@ -118,17 +130,10 @@
             this.toolTip1.SetToolTip(this.label1, "Please contact the library.");
             this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(400, 40);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(144, 136);
-            this.pictureBox1.TabIndex = 12;
-            this.pictureBox1.TabStop = false;
-            // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(384, 392);
+            this.button1.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.button1.Location = new System.Drawing.Point(391, 472);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(184, 23);
             this.button1.TabIndex = 14;
@@ -136,11 +141,23 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.pictureBox1.Image = global::Library.Properties.Resources.BIU;
+            this.pictureBox1.Location = new System.Drawing.Point(407, 64);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(144, 144);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 12;
+            this.pictureBox1.TabStop = false;
+            // 
             // Login
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(942, 586);
+            this.BackColor = System.Drawing.Color.White;
+            this.ClientSize = new System.Drawing.Size(970, 586);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
@@ -151,6 +168,7 @@
             this.Controls.Add(this.tbPassword);
             this.Controls.Add(this.lbEmail);
             this.Controls.Add(this.tbEmail);
+            this.MinimumSize = new System.Drawing.Size(958, 625);
             this.Name = "Login";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Login";
